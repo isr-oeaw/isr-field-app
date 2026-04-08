@@ -58,7 +58,10 @@ def multipolygon_from_geojson_dict(geometry_data):
 def mapping_area_list_view(request, dataset_id):
     """Get list of all mapping areas for a dataset"""
     dataset = get_object_or_404(DataSet, id=dataset_id)
-    
+
+    if not getattr(dataset, 'enable_mapping_areas', False):
+        return _mapping_areas_disabled_response()
+
     # Only dataset owner or superuser can access mapping areas
     if dataset.owner != request.user and not request.user.is_superuser:
         return JsonResponse({'success': False, 'error': 'Access denied'}, status=403)
@@ -136,7 +139,10 @@ def mapping_area_list_view(request, dataset_id):
 def mapping_area_create_view(request, dataset_id):
     """Create a new mapping area"""
     dataset = get_object_or_404(DataSet, id=dataset_id)
-    
+
+    if not getattr(dataset, 'enable_mapping_areas', False):
+        return _mapping_areas_disabled_response()
+
     # Only dataset owner or superuser can create mapping areas
     if dataset.owner != request.user and not request.user.is_superuser:
         return JsonResponse({'success': False, 'error': 'Access denied'}, status=403)
@@ -217,7 +223,10 @@ def mapping_area_update_view(request, dataset_id, area_id):
     """Update an existing mapping area"""
     dataset = get_object_or_404(DataSet, id=dataset_id)
     mapping_area = get_object_or_404(MappingArea, id=area_id, dataset=dataset)
-    
+
+    if not getattr(dataset, 'enable_mapping_areas', False):
+        return _mapping_areas_disabled_response()
+
     # Only dataset owner or superuser can update mapping areas
     if dataset.owner != request.user and not request.user.is_superuser:
         return JsonResponse({'success': False, 'error': 'Access denied'}, status=403)
@@ -294,7 +303,10 @@ def mapping_area_delete_view(request, dataset_id, area_id):
     """Delete a mapping area"""
     dataset = get_object_or_404(DataSet, id=dataset_id)
     mapping_area = get_object_or_404(MappingArea, id=area_id, dataset=dataset)
-    
+
+    if not getattr(dataset, 'enable_mapping_areas', False):
+        return _mapping_areas_disabled_response()
+
     # Only dataset owner or superuser can delete mapping areas
     if dataset.owner != request.user and not request.user.is_superuser:
         return JsonResponse({'success': False, 'error': 'Access denied'}, status=403)
