@@ -13,52 +13,81 @@ from ..models import DataSet, MappingArea
 logger = logging.getLogger(__name__)
 
 
-def _ensure_closed_ring_xy(ring_coords):
-    """Closed ring as list of (x, y); GeoJSON exterior rings need at least 4 positions."""
-    if not ring_coords or len(ring_coords) < 3:
-        raise ValueError('Ring too short')
-    pts = [(float(c[0]), float(c[1])) for c in ring_coords]
-    if pts[0] != pts[-1]:
-        pts.append(pts[0])
-    if len(pts) < 4:
-        raise ValueError('Ring too short')
-    return pts
+def _mapping_areas_disabled_response():
+    return JsonResponse(
+        {
+            'success': False,
+            'error': 'Mapping areas are not enabled for this dataset.',
+        },
+        status=403,
+    )
 
 
-def _polygon_from_geojson_polygon_coords(poly_coords):
-    """GEOS Polygon from GeoJSON Polygon coordinates (exterior + optional holes)."""
-    if not poly_coords or not poly_coords[0]:
-        raise ValueError('Empty polygon')
-    exterior = _ensure_closed_ring_xy(poly_coords[0])
-    holes = [_ensure_closed_ring_xy(ring) for ring in poly_coords[1:]]
-    if holes:
-        return Polygon(exterior, *holes, srid=4326)
-    return Polygon(exterior, srid=4326)
+def _serialize_mapping_area_outline(area):
+    """GeoJSON payload for read-only map outlines (collaborators)."""
+    if not area.geometry:
+        return None
+    geojson = area.geometry.geojson
+    geometry_data = json.loads(geojson)
+    return {
+        'id': area.id,
+        'name': area.name,
+        'geometry': geometry_data,
+    }
 
 
-def multipolygon_from_geojson_dict(geometry_data):
-    """Parse GeoJSON Polygon or MultiPolygon into GEOS MultiPolygon (SRID 4326)."""
-    gtype = geometry_data.get('type')
-    if gtype == 'Polygon':
-        coords = geometry_data.get('coordinates') or []
-        poly = _polygon_from_geojson_polygon_coords(coords)
-        return MultiPolygon(poly, srid=4326)
-    if gtype == 'MultiPolygon':
-        multi = geometry_data.get('coordinates') or []
-        if not multi:
-            raise ValueError('Empty MultiPolygon')
-        polys = []
-        for poly_coords in multi:
-            polys.append(_polygon_from_geojson_polygon_coords(poly_coords))
-        return MultiPolygon(polys, srid=4326)
-    raise ValueError('Unsupported geometry type')
+@login_required
+def mapping_area_outlines_view(request, dataset_id):
+    """
+    Read-only polygon outlines for collaborators restricted to specific mapping areas.
+    Owners/superusers get an empty list (they use the full mapping-areas API).
+    """
+    dataset = get_object_or_404(DataSet, id=dataset_id)
+    if not dataset.can_access(request.user):
+        return JsonResponse({'success': False, 'error': 'Access denied'}, status=403)
+    if not getattr(dataset, 'enable_mapping_areas', False):
+        return JsonResponse({'success': True, 'mapping_areas': []})
+    if request.user.is_superuser or dataset.owner == request.user:
+        return JsonResponse({'success': True, 'mapping_areas': []})
+
+    allowed_ids = dataset.get_user_mapping_area_ids(request.user)
+    if not allowed_ids:
+        return JsonResponse({'success': True, 'mapping_areas': []})
+
+    try:
+        areas_qs = MappingArea.objects.filter(dataset=dataset, id__in=allowed_ids)
+    except (ProgrammingError, OperationalError) as db_exc:
+        logger.warning(
+            "Database error while loading mapping area outlines for dataset %s: %s",
+            dataset.id,
+            db_exc,
+        )
+        return JsonResponse({'success': True, 'mapping_areas': []})
+
+    areas_data = []
+    for area in areas_qs:
+        try:
+            payload = _serialize_mapping_area_outline(area)
+            if payload:
+                areas_data.append(payload)
+        except (ValueError, GEOSException, AttributeError) as exc:
+            logger.exception(
+                "Failed to serialise mapping area outline %s for dataset %s: %s",
+                area.id,
+                dataset.id,
+                exc,
+            )
+    return JsonResponse({'success': True, 'mapping_areas': areas_data})
 
 
 @login_required
 def mapping_area_list_view(request, dataset_id):
     """Get list of all mapping areas for a dataset"""
     dataset = get_object_or_404(DataSet, id=dataset_id)
-    
+
+    if not getattr(dataset, 'enable_mapping_areas', False):
+        return _mapping_areas_disabled_response()
+
     # Only dataset owner or superuser can access mapping areas
     if dataset.owner != request.user and not request.user.is_superuser:
         return JsonResponse({'success': False, 'error': 'Access denied'}, status=403)
@@ -136,7 +165,10 @@ def mapping_area_list_view(request, dataset_id):
 def mapping_area_create_view(request, dataset_id):
     """Create a new mapping area"""
     dataset = get_object_or_404(DataSet, id=dataset_id)
-    
+
+    if not getattr(dataset, 'enable_mapping_areas', False):
+        return _mapping_areas_disabled_response()
+
     # Only dataset owner or superuser can create mapping areas
     if dataset.owner != request.user and not request.user.is_superuser:
         return JsonResponse({'success': False, 'error': 'Access denied'}, status=403)
@@ -217,7 +249,10 @@ def mapping_area_update_view(request, dataset_id, area_id):
     """Update an existing mapping area"""
     dataset = get_object_or_404(DataSet, id=dataset_id)
     mapping_area = get_object_or_404(MappingArea, id=area_id, dataset=dataset)
-    
+
+    if not getattr(dataset, 'enable_mapping_areas', False):
+        return _mapping_areas_disabled_response()
+
     # Only dataset owner or superuser can update mapping areas
     if dataset.owner != request.user and not request.user.is_superuser:
         return JsonResponse({'success': False, 'error': 'Access denied'}, status=403)
@@ -294,7 +329,10 @@ def mapping_area_delete_view(request, dataset_id, area_id):
     """Delete a mapping area"""
     dataset = get_object_or_404(DataSet, id=dataset_id)
     mapping_area = get_object_or_404(MappingArea, id=area_id, dataset=dataset)
-    
+
+    if not getattr(dataset, 'enable_mapping_areas', False):
+        return _mapping_areas_disabled_response()
+
     # Only dataset owner or superuser can delete mapping areas
     if dataset.owner != request.user and not request.user.is_superuser:
         return JsonResponse({'success': False, 'error': 'Access denied'}, status=403)
