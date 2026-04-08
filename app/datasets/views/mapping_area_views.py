@@ -23,6 +23,47 @@ def _mapping_areas_disabled_response():
     )
 
 
+def _ensure_closed_ring_xy(ring_coords):
+    """Closed ring as list of (x, y); GeoJSON exterior rings need at least four positions."""
+    if not ring_coords or len(ring_coords) < 3:
+        raise ValueError('Ring too short')
+    pts = [(float(c[0]), float(c[1])) for c in ring_coords]
+    if pts[0] != pts[-1]:
+        pts.append(pts[0])
+    if len(pts) < 4:
+        raise ValueError('Ring too short')
+    return pts
+
+
+def _polygon_from_geojson_polygon_coords(poly_coords):
+    """GEOS Polygon from GeoJSON Polygon coordinates (exterior + optional holes)."""
+    if not poly_coords or not poly_coords[0]:
+        raise ValueError('Empty polygon')
+    exterior = _ensure_closed_ring_xy(poly_coords[0])
+    holes = [_ensure_closed_ring_xy(ring) for ring in poly_coords[1:]]
+    if holes:
+        return Polygon(exterior, *holes, srid=4326)
+    return Polygon(exterior, srid=4326)
+
+
+def multipolygon_from_geojson_dict(geometry_data):
+    """Parse GeoJSON Polygon or MultiPolygon into GEOS MultiPolygon (SRID 4326)."""
+    gtype = geometry_data.get('type')
+    if gtype == 'Polygon':
+        coords = geometry_data.get('coordinates') or []
+        poly = _polygon_from_geojson_polygon_coords(coords)
+        return MultiPolygon(poly, srid=4326)
+    if gtype == 'MultiPolygon':
+        multi = geometry_data.get('coordinates') or []
+        if not multi:
+            raise ValueError('Empty MultiPolygon')
+        polys = []
+        for poly_coords in multi:
+            polys.append(_polygon_from_geojson_polygon_coords(poly_coords))
+        return MultiPolygon(polys, srid=4326)
+    raise ValueError('Unsupported geometry type')
+
+
 def _serialize_mapping_area_outline(area):
     """GeoJSON payload for read-only map outlines (collaborators)."""
     if not area.geometry:

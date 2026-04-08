@@ -2704,6 +2704,9 @@ function triggerImportMappingAreaGeojson() {
     }
 }
 
+// Expose for environments where inline handlers cannot see script globals (e.g. some WebKit builds).
+window.triggerImportMappingAreaGeojson = triggerImportMappingAreaGeojson;
+
 function onMappingAreaGeojsonFileSelected(ev) {
     var input = ev.target;
     var file = input.files && input.files[0];
@@ -2843,6 +2846,13 @@ document.addEventListener('DOMContentLoaded', function() {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
             saveMappingArea();
+        });
+    }
+    var importGeojsonBtn = document.getElementById('importGeojsonBtn');
+    if (importGeojsonBtn) {
+        importGeojsonBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            triggerImportMappingAreaGeojson();
         });
     }
     var geoInput = document.getElementById('importMappingAreaGeojsonInput');
