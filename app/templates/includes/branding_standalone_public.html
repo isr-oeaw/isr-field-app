@@ -1,0 +1,37 @@
+{# Bootstrap auth-style pages outside datasets/_base.html (login, register, password reset flows) #}
+<style>
+:root {
+    --isr-primary: {{ theme_primary }};
+    --isr-secondary: {{ theme_secondary }};
+    --isr-accent: {{ theme_accent }};
+    --isr-primary-light: {{ theme_primary_light }};
+    --isr-primary-dark: {{ theme_primary_dark }};
+}
+.btn-primary {
+    background-color: var(--isr-primary) !important;
+    border-color: var(--isr-primary) !important;
+}
+.btn-primary:hover {
+    background-color: var(--isr-primary-light) !important;
+    border-color: var(--isr-primary-light) !important;
+}
+.btn-outline-primary {
+    color: var(--isr-primary) !important;
+    border-color: var(--isr-primary) !important;
+}
+.btn-outline-primary:hover {
+    background-color: var(--isr-primary) !important;
+    border-color: var(--isr-primary) !important;
+    color: #fff !important;
+}
+.card-header.bg-primary {
+    background-color: var(--isr-primary) !important;
+}
+.form-control:focus {
+    border-color: var(--isr-primary);
+    box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--isr-primary) 25%, transparent);
+}
+.text-primary {
+    color: var(--isr-primary) !important;
+}
+</style>

@@ -14,7 +14,7 @@
             padding: 20px;
         }
         .header {
-            background-color: #007bff;
+            background-color: {{ theme_primary }};
             color: white;
             padding: 20px;
             text-align: center;
@@ -33,7 +33,7 @@
         }
         .download-button {
             display: inline-block;
-            background-color: #007bff;
+            background-color: {{ theme_primary }};
             color: white;
             padding: 12px 24px;
             text-decoration: none;
@@ -42,7 +42,7 @@
             margin: 20px 0;
         }
         .download-button:hover {
-            background-color: #0056b3;
+            background-color: {{ theme_primary_dark }};
         }
         .details {
             background-color: white;
@@ -150,7 +150,7 @@
     </div>
     
     <div class="footer">
-        <p>This email was sent from ISR Field - Spatial Data Management System</p>
+        <p>This email was sent from {{ site_brand_name }} - Spatial Data Management System</p>
         <p>If you have any questions, please contact the system administrator.</p>
     </div>
 </body>

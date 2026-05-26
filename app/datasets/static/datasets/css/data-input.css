@@ -8,8 +8,8 @@
 
 /* Geometry details panel */
 .geometry-details {
-    background-color: rgba(146, 193, 233, 0.1);
-    border: 1px solid rgba(0, 71, 187, 0.2);
+    background-color: color-mix(in srgb, var(--isr-accent) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--isr-primary) 23%, transparent);
     padding: 20px;
     border-radius: 8px;
     margin-top: 0;
@@ -48,24 +48,24 @@
 
 /* ISR Brand Colors for map elements */
 .map-controls .btn-primary {
-    background-color: #0047BB !important;
-    border-color: #0047BB !important;
+    background-color: var(--isr-primary) !important;
+    border-color: var(--isr-primary) !important;
 }
 
 .map-controls .btn-primary:hover {
-    background-color: #0056d6 !important;
-    border-color: #0056d6 !important;
+    background-color: var(--isr-primary-light) !important;
+    border-color: var(--isr-primary-light) !important;
 }
 
 .map-controls .btn-info {
-    background-color: #92C1E9 !important;
-    border-color: #92C1E9 !important;
-    color: #001A70 !important;
+    background-color: var(--isr-accent) !important;
+    border-color: var(--isr-accent) !important;
+    color: var(--isr-secondary) !important;
 }
 
 .map-controls .btn-info:hover {
-    background-color: #7bb3e6 !important;
-    border-color: #7bb3e6 !important;
+    background-color: color-mix(in srgb, var(--isr-accent) 88%, black) !important;
+    border-color: color-mix(in srgb, var(--isr-accent) 88%, black) !important;
 }
 
 /* Map control buttons styling */
@@ -112,16 +112,16 @@
 }
 
 .entries-table .pagination .page-link {
-    color: #0d6efd;
+    color: var(--isr-primary);
     border-color: #dee2e6;
 }
 
 .entries-table .pagination .page-item.active .page-link {
-    background-color: #0d6efd;
-    border-color: #0d6efd;
+    background-color: var(--isr-primary);
+    border-color: var(--isr-primary);
 }
 
 .entries-table .search-form .form-control:focus {
-    border-color: #0d6efd;
-    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    border-color: var(--isr-primary);
+    box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--isr-primary) 25%, transparent);
 }

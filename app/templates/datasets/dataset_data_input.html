@@ -2,11 +2,7 @@
 {% load static %}
 {% load i18n %}
 
-{% block navbar_center %}
-{% include "datasets/includes/anonymous_change_user_nav.html" %}
-{% endblock %}
-
-{% block title %}{% trans "Data Input" %} - {{ dataset.name }}{% endblock %}
+{% block title %}{% trans "Data Input" %} - {{ dataset.name }} - {{ site_brand_name }}{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
