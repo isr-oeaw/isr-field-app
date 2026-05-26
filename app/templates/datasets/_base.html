@@ -176,6 +176,13 @@
         .badge.bg-danger {
             background-color: #dc3545 !important;
         }
+
+        /* Above siblings in navbar (brand z-1) so “Change user” is never clipped as display:none */
+        .navbar-dark .navbar-center-slot {
+            z-index: 5;
+            pointer-events: auto;
+            max-width: min(420px, calc(100% - 8rem));
+        }
         
         /* Footer styling */
         footer {
@@ -208,7 +215,7 @@
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
+            <div class="collapse navbar-collapse justify-content-lg-end" id="navbarNav">
                 {% if user.is_authenticated %}
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
