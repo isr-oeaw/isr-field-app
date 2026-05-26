@@ -17,9 +17,9 @@ from django.db import transaction
 from django.core.files.storage import default_storage
 from django.contrib.auth.models import User
 
+from isrfield.context_processors import branding_template_context
+
 from .models import DataSet, DataEntryFile, ExportTask
-
-
 def generate_zip_export(task_id, dataset_id, user_id, file_types=None, date_from=None, date_to=None, 
                        organize_by='geometry', include_metadata=True):
     """
@@ -307,6 +307,7 @@ def send_export_completion_email(user, dataset, task, zip_path):
             'file_size_mb': round(task.file_size / (1024 * 1024), 2) if task.file_size else 0,
             'site_url': getattr(settings, 'SITE_URL', 'http://localhost:8000'),
         }
+        context.update(branding_template_context())
         
         # Render email content
         subject = f"{settings.EMAIL_SUBJECT_PREFIX}File Export Completed - {dataset.name}"
@@ -332,7 +333,7 @@ Download Link:
 The ZIP file contains all requested files with geometry/entry ID prefixes for easy identification.
 
 Best regards,
-ISR Field Team
+{settings.SITE_NAME} Team
 """
         
         # Send email
