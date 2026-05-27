@@ -26,7 +26,20 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-!7lxj&-vt5k^n@
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', 'isrfield.dataplexity.eu', 'testserver']
+_ALLOWED_HOSTS_DEFAULT = 'localhost,127.0.0.1,0.0.0.0,isrfield.dataplexity.eu,testserver'
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.environ.get('ALLOWED_HOSTS', _ALLOWED_HOSTS_DEFAULT).split(',')
+    if host.strip()
+]
+
+# Browser title / navbar brand + theme (CSS vars). Overridable via environment.
+SITE_NAME = os.environ.get('SITE_NAME', 'ISR Field')
+THEME_PRIMARY = os.environ.get('THEME_PRIMARY', '#0047BB')
+THEME_SECONDARY = os.environ.get('THEME_SECONDARY', '#001A70')
+THEME_ACCENT = os.environ.get('THEME_ACCENT', '#92C1E9')
+THEME_PRIMARY_LIGHT = os.environ.get('THEME_PRIMARY_LIGHT', '#0056d6')
+THEME_PRIMARY_DARK = os.environ.get('THEME_PRIMARY_DARK', '#003a99')
 
 # CSRF settings
 CSRF_TRUSTED_ORIGINS = [
@@ -73,6 +86,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'isrfield.context_processors.branding',
             ],
         },
     },

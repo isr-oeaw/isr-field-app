@@ -8,10 +8,23 @@ Configuration lives in [`app/isrfield/settings.py`](../app/isrfield/settings.py)
 |---------|--------|
 | `SECRET_KEY` | `DJANGO_SECRET_KEY`; insecure default present for dev only — set in production. |
 | `DEBUG` | Hard-coded `True` in repo settings; production deployments should use env-controlled debug off. |
-| `ALLOWED_HOSTS` | Hostnames including `localhost`, deployment host `isrfield.dataplexity.eu`. |
+| `ALLOWED_HOSTS` | Comma-separated list via env `ALLOWED_HOSTS`; default `localhost`, `127.0.0.1`, `0.0.0.0`, `isrfield.dataplexity.eu`, `testserver`. |
 | `CSRF_TRUSTED_ORIGINS` | HTTPS/localhost origins for CSRF. |
 
-## Database (PostGIS)
+## Branding / theme
+
+Rendered in [`app/templates/`](../app/templates/) (`site_brand_name` / CSS variables `--isr-*`). Emails that use `render_to_string` merge the same values where updated (e.g. export completion).
+
+| Env var | Django setting | Default |
+|---------|----------------|---------|
+| `SITE_NAME` | `SITE_NAME` | `ISR Field` |
+| `THEME_PRIMARY` | `THEME_PRIMARY` | `#0047BB` |
+| `THEME_SECONDARY` | `THEME_SECONDARY` | `#001A70` |
+| `THEME_ACCENT` | `THEME_ACCENT` | `#92C1E9` |
+| `THEME_PRIMARY_LIGHT` | `THEME_PRIMARY_LIGHT` | `#0056d6` |
+| `THEME_PRIMARY_DARK` | `THEME_PRIMARY_DARK` | `#003a99` |
+
+Use hex colors (e.g. `#1a2b3c`). Templates expose `site_brand_name` separately from Django’s `contrib.sites` `site_name` (e.g. password-reset context) to avoid naming clashes.
 
 The default database uses the PostGIS engine:
 
