@@ -9,7 +9,7 @@ Configuration lives in [`app/isrfield/settings.py`](../app/isrfield/settings.py)
 | `SECRET_KEY` | `DJANGO_SECRET_KEY`; insecure default present for dev only — set in production. |
 | `DEBUG` | Hard-coded `True` in repo settings; production deployments should use env-controlled debug off. |
 | `ALLOWED_HOSTS` | Comma-separated list via env `ALLOWED_HOSTS`; default `localhost`, `127.0.0.1`, `0.0.0.0`, `isrfield.dataplexity.eu`, `testserver`. |
-| `CSRF_TRUSTED_ORIGINS` | HTTPS/localhost origins for CSRF. |
+| `CSRF_TRUSTED_ORIGINS` | Comma-separated origins via env `CSRF_TRUSTED_ORIGINS` (include `https://` or `http://`); default `https://isrfield.dataplexity.eu`, `http://localhost:8000`, `http://127.0.0.1:8000`. |
 
 ## Branding / theme
 

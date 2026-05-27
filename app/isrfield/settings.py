@@ -26,7 +26,7 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-!7lxj&-vt5k^n@
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-_ALLOWED_HOSTS_DEFAULT = 'localhost,127.0.0.1,0.0.0.0,isrfield.dataplexity.eu,testserver'
+_ALLOWED_HOSTS_DEFAULT = 'localhost,127.0.0.1,isrfield.dataplexity.eu'
 ALLOWED_HOSTS = [
     host.strip()
     for host in os.environ.get('ALLOWED_HOSTS', _ALLOWED_HOSTS_DEFAULT).split(',')
@@ -41,11 +41,14 @@ THEME_ACCENT = os.environ.get('THEME_ACCENT', '#92C1E9')
 THEME_PRIMARY_LIGHT = os.environ.get('THEME_PRIMARY_LIGHT', '#0056d6')
 THEME_PRIMARY_DARK = os.environ.get('THEME_PRIMARY_DARK', '#003a99')
 
-# CSRF settings
+# CSRF settings (comma-separated origins, include scheme: https://example.com)
+_CSRF_TRUSTED_ORIGINS_DEFAULT = (
+    'https://isrfield.dataplexity.eu,http://localhost:8000,http://127.0.0.1:8000'
+)
 CSRF_TRUSTED_ORIGINS = [
-    'https://isrfield.dataplexity.eu',
-    'http://localhost:8000',
-    'http://127.0.0.1:8000',
+    origin.strip()
+    for origin in os.environ.get('CSRF_TRUSTED_ORIGINS', _CSRF_TRUSTED_ORIGINS_DEFAULT).split(',')
+    if origin.strip()
 ]
 
 
