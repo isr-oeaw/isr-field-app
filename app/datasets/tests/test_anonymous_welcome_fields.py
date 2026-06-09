@@ -7,7 +7,12 @@ from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from datasets.models import DataSet, DatasetField, VirtualContributor
+from datasets.models import (
+    DEFAULT_ANONYMOUS_WELCOME_MESSAGE,
+    DataSet,
+    DatasetField,
+    VirtualContributor,
+)
 from datasets.views.dataset_views import normalize_welcome_field_submission
 
 
@@ -159,6 +164,70 @@ class DatasetDetailAnonymousWelcomeColumnTests(TestCase):
         )
         self.field.refresh_from_db()
         self.assertFalse(self.field.anonymous_welcome)
+
+
+class AnonymousWelcomeMessageTests(TestCase):
+    def setUp(self):
+        self.owner = User.objects.create_user(username="o", password="p")
+        self.dataset = DataSet.objects.create(
+            name="WelcomeMsg",
+            owner=self.owner,
+            allow_anonymous_data_input=True,
+        )
+        self.dataset.ensure_anonymous_access_token()
+        self.dataset.refresh_from_db()
+        self.client = Client()
+        self.client.force_login(self.owner)
+
+    def _post_settings(self, **extra):
+        data = {
+            "name": self.dataset.name,
+            "description": self.dataset.description or "",
+            "allow_anonymous_data_input": "on",
+            "data_input_show_street_view": "on",
+        }
+        data.update(extra)
+        return self.client.post(
+            reverse("dataset_settings", args=[self.dataset.id]),
+            data,
+        )
+
+    def test_settings_page_includes_welcome_message_field(self):
+        response = self.client.get(reverse("dataset_settings", args=[self.dataset.id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'name="anonymous_welcome_message"')
+        self.assertContains(response, "Anonymous welcome message")
+
+    def test_settings_post_saves_custom_message(self):
+        custom = "Please contribute observations for this survey."
+        response = self._post_settings(anonymous_welcome_message=custom)
+        self.assertEqual(response.status_code, 302)
+        self.dataset.refresh_from_db()
+        self.assertEqual(self.dataset.anonymous_welcome_message, custom)
+
+    def test_get_anonymous_welcome_message_default_when_blank(self):
+        self.assertEqual(self.dataset.get_anonymous_welcome_message(), DEFAULT_ANONYMOUS_WELCOME_MESSAGE)
+
+    def test_anonymous_data_input_renders_custom_message(self):
+        custom = "Custom intro for anonymous users."
+        self.dataset.anonymous_welcome_message = custom
+        self.dataset.save(update_fields=["anonymous_welcome_message"])
+        url = reverse(
+            "dataset_data_input_anonymous",
+            args=[self.dataset.id, self.dataset.anonymous_access_token],
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, custom)
+
+    def test_anonymous_data_input_renders_default_when_blank(self):
+        url = reverse(
+            "dataset_data_input_anonymous",
+            args=[self.dataset.id, self.dataset.anonymous_access_token],
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, DEFAULT_ANONYMOUS_WELCOME_MESSAGE)
 
 
 class ResetAnonymousVirtualUserTests(TestCase):

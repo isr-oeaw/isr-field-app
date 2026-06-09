@@ -58,6 +58,7 @@ Individual dataset views typically call **`dataset.can_access(request.user)`** a
 If **`allow_anonymous_data_input`** is enabled on a dataset:
 
 - **`anonymous_access_token`** stores a secret token for shareable URLs ([`DataSet.ensure_anonymous_access_token`](../app/datasets/models.py)).
+- **`anonymous_welcome_message`** (dataset settings) customizes the intro text in the anonymous welcome modal; blank uses [`DEFAULT_ANONYMOUS_WELCOME_MESSAGE`](../app/datasets/models.py).
 - Routes such as **`dataset_data_input_anonymous`** ([`urls.py`](../app/isrfield/urls.py)) accept that token without normal login.
 - Geometries and entries created without a logged-in user may reference **`VirtualContributor`** instead of **`User`**.
 
