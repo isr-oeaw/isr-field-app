@@ -18,6 +18,12 @@ class AuditLog(models.Model):
         return f"{self.timestamp}: {self.user} - {self.action} - {self.target}"
 
 
+DEFAULT_ANONYMOUS_WELCOME_MESSAGE = (
+    "You can add geometry points and data entries without logging in. "
+    "Optionally, enter a name to identify your contributions:"
+)
+
+
 class DataSet(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
@@ -43,6 +49,11 @@ class DataSet(models.Model):
         help_text="When anonymous data input and mapping areas are enabled: show all mapping area outlines (with names) on the anonymous data-input map. Does not grant anonymous mapping-area editing.",
     )
     anonymous_access_token = models.CharField(max_length=64, unique=True, null=True, blank=True, help_text="Secret token for anonymous access URL")
+    anonymous_welcome_message = models.TextField(
+        blank=True,
+        default="",
+        help_text="Intro text shown in the anonymous welcome modal. Leave blank to use the default.",
+    )
     map_default_lat = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True, help_text="Default map center latitude when opening data input")
     map_default_lng = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True, help_text="Default map center longitude when opening data input")
     map_default_zoom = models.PositiveSmallIntegerField(
@@ -70,6 +81,14 @@ class DataSet(models.Model):
     data_input_show_street_view = models.BooleanField(
         default=True,
         help_text="When enabled, contributors see a Street View button in the geometry detail panel on the data-input map.",
+    )
+    data_input_show_focus_all = models.BooleanField(
+        default=True,
+        help_text="When enabled, contributors see the Focus All button on the data-input map.",
+    )
+    data_input_show_goto_location = models.BooleanField(
+        default=True,
+        help_text="When enabled, contributors see the Goto location button on the data-input map.",
     )
 
     def __str__(self):
@@ -153,6 +172,10 @@ class DataSet(models.Model):
             self.anonymous_access_token = secrets.token_urlsafe(48)
             self.save(update_fields=['anonymous_access_token'])
         return self.anonymous_access_token
+
+    def get_anonymous_welcome_message(self):
+        text = (self.anonymous_welcome_message or "").strip()
+        return text or DEFAULT_ANONYMOUS_WELCOME_MESSAGE
 
     def user_has_geometry_access(self, user, geometry_obj):
         """

@@ -357,10 +357,12 @@ def dataset_edit_view(request, dataset_id):
         map_default_lat = request.POST.get('map_default_lat')
         map_default_lng = request.POST.get('map_default_lng')
         map_default_zoom = request.POST.get('map_default_zoom')
+        anonymous_welcome_message = (request.POST.get('anonymous_welcome_message') or '').strip()
         
         if name:
             dataset.name = name
             dataset.description = description
+            dataset.anonymous_welcome_message = anonymous_welcome_message
             dataset.is_public = is_public
             # Handle allow_multiple_entries field (graceful handling for migration)
             try:
@@ -409,6 +411,8 @@ def dataset_edit_view(request, dataset_id):
                 attachment_mode if attachment_mode in allowed_attachment_modes else DataSet.DATA_INPUT_ATTACHMENTS_IMAGES
             )
             dataset.data_input_show_street_view = request.POST.get('data_input_show_street_view') == 'on'
+            dataset.data_input_show_focus_all = request.POST.get('data_input_show_focus_all') == 'on'
+            dataset.data_input_show_goto_location = request.POST.get('data_input_show_goto_location') == 'on'
             dataset.save()
 
             field_config = ensure_dataset_field_config(dataset)
@@ -462,12 +466,15 @@ def dataset_copy_view(request, dataset_id):
         'anonymous_show_all_points': getattr(original_dataset, 'anonymous_show_all_points', False),
         'anonymous_disable_new_points': getattr(original_dataset, 'anonymous_disable_new_points', False),
         'anonymous_show_all_mapping_areas': getattr(original_dataset, 'anonymous_show_all_mapping_areas', False),
+        'anonymous_welcome_message': getattr(original_dataset, 'anonymous_welcome_message', '') or '',
         'data_input_attachments_mode': getattr(
             original_dataset,
             'data_input_attachments_mode',
             DataSet.DATA_INPUT_ATTACHMENTS_IMAGES,
         ),
         'data_input_show_street_view': getattr(original_dataset, 'data_input_show_street_view', True),
+        'data_input_show_focus_all': getattr(original_dataset, 'data_input_show_focus_all', True),
+        'data_input_show_goto_location': getattr(original_dataset, 'data_input_show_goto_location', True),
     }
     if hasattr(original_dataset, 'map_default_lat'):
         create_kwargs['map_default_lat'] = original_dataset.map_default_lat

@@ -109,6 +109,11 @@
                                         <div class="form-text">When enabled, anonymous contributors see every mapping area as a read-only outline with its name on the data-input map. They cannot edit mapping areas.</div>
                                     </div>
                                 </div>
+                                <div class="mb-3">
+                                    <label for="anonymous_welcome_message" class="form-label fw-semibold">Anonymous welcome message</label>
+                                    <textarea class="form-control" id="anonymous_welcome_message" name="anonymous_welcome_message" rows="3" placeholder="You can add geometry points and data entries without logging in. Optionally, enter a name to identify your contributions:">{{ dataset.anonymous_welcome_message }}</textarea>
+                                    <div class="form-text">Shown at the top of the welcome modal when anonymous contributors open the data-input link. Leave empty to use the default English text.</div>
+                                </div>
                                 {% if dataset.allow_anonymous_data_input and dataset.anonymous_access_token %}
                                 <div class="mt-3 p-3 bg-light rounded">
                                     <label class="form-label fw-semibold small">Shareable data input URL</label>
@@ -132,6 +137,16 @@
                             <input class="form-check-input" type="checkbox" id="data_input_show_street_view" name="data_input_show_street_view" {% if dataset.data_input_show_street_view %}checked{% endif %}>
                             <label class="form-check-label fw-semibold" for="data_input_show_street_view">Show Street View button</label>
                             <div class="form-text">When enabled, a link to Google Street View appears in the geometry detail panel on the data-input map (when a point has coordinates).</div>
+                        </div>
+                        <div class="form-check form-switch mb-4 pb-3 border-bottom">
+                            <input class="form-check-input" type="checkbox" id="data_input_show_focus_all" name="data_input_show_focus_all" {% if dataset.data_input_show_focus_all %}checked{% endif %}>
+                            <label class="form-check-label fw-semibold" for="data_input_show_focus_all">Show Focus All button</label>
+                            <div class="form-text">When enabled, contributors see a Focus All control in the map toolbar that fits the view to all loaded geometry points.</div>
+                        </div>
+                        <div class="form-check form-switch mb-4 pb-3 border-bottom">
+                            <input class="form-check-input" type="checkbox" id="data_input_show_goto_location" name="data_input_show_goto_location" {% if dataset.data_input_show_goto_location %}checked{% endif %}>
+                            <label class="form-check-label fw-semibold" for="data_input_show_goto_location">Show Goto location button</label>
+                            <div class="form-text">When enabled, contributors can pick a map location by clicking on the map (Goto location mode in the map toolbar).</div>
                         </div>
                         <div class="mb-4 pb-3 border-bottom">
                             {% with attach_mode=dataset.data_input_attachments_mode|default:"images" %}

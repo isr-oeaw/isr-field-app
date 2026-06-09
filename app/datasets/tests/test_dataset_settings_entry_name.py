@@ -19,6 +19,7 @@ class DatasetSettingsEntryNameTest(TestCase):
         d = self.dataset
         extra = dict(extra)
         omit_street_view_checkbox = extra.pop('_omit_street_view_checkbox', False)
+        omit_map_button_checkboxes = extra.pop('_omit_map_button_checkboxes', False)
         data = {
             'name': d.name,
             'description': d.description or '',
@@ -37,6 +38,10 @@ class DatasetSettingsEntryNameTest(TestCase):
             data['anonymous_disable_new_points'] = 'on'
         if getattr(d, 'data_input_show_street_view', True) and not omit_street_view_checkbox:
             data['data_input_show_street_view'] = 'on'
+        if getattr(d, 'data_input_show_focus_all', True) and not omit_map_button_checkboxes:
+            data['data_input_show_focus_all'] = 'on'
+        if getattr(d, 'data_input_show_goto_location', True) and not omit_map_button_checkboxes:
+            data['data_input_show_goto_location'] = 'on'
         if d.map_default_lat is not None:
             data['map_default_lat'] = str(d.map_default_lat)
         if d.map_default_lng is not None:
@@ -101,3 +106,47 @@ class DatasetSettingsEntryNameTest(TestCase):
         r = self.client.get(reverse('dataset_settings', args=[self.dataset.id]))
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, 'data_input_show_street_view')
+
+    def test_settings_form_includes_map_button_toggles(self):
+        ensure_dataset_field_config(self.dataset)
+        self.client.login(username='u', password='p')
+        r = self.client.get(reverse('dataset_settings', args=[self.dataset.id]))
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'data_input_show_focus_all')
+        self.assertContains(r, 'data_input_show_goto_location')
+        self.assertContains(r, 'Show Focus All button')
+        self.assertContains(r, 'Show Goto location button')
+
+    def test_uncheck_disables_map_control_buttons(self):
+        self.dataset.data_input_show_focus_all = True
+        self.dataset.data_input_show_goto_location = True
+        self.dataset.save(update_fields=[
+            'data_input_show_focus_all',
+            'data_input_show_goto_location',
+        ])
+        self.client.login(username='u', password='p')
+        r = self._post_settings(_omit_map_button_checkboxes=True)
+        self.assertEqual(r.status_code, 302)
+        self.dataset.refresh_from_db()
+        self.assertFalse(self.dataset.data_input_show_focus_all)
+        self.assertFalse(self.dataset.data_input_show_goto_location)
+
+    def test_data_input_hides_map_buttons_when_disabled(self):
+        self.dataset.data_input_show_focus_all = False
+        self.dataset.data_input_show_goto_location = False
+        self.dataset.save(update_fields=[
+            'data_input_show_focus_all',
+            'data_input_show_goto_location',
+        ])
+        self.client.login(username='u', password='p')
+        r = self.client.get(reverse('dataset_data_input', args=[self.dataset.id]))
+        self.assertEqual(r.status_code, 200)
+        self.assertNotContains(r, 'id="focusAllBtn"')
+        self.assertNotContains(r, 'id="gotoLocationBtn"')
+
+    def test_data_input_shows_map_buttons_by_default(self):
+        self.client.login(username='u', password='p')
+        r = self.client.get(reverse('dataset_data_input', args=[self.dataset.id]))
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'id="focusAllBtn"')
+        self.assertContains(r, 'id="gotoLocationBtn"')

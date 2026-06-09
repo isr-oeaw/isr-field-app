@@ -52,12 +52,16 @@
                         <i class="bi bi-plus-circle"></i> {% trans "Add Point" %}
                     </button>
                     {% endif %}
+                    {% if dataset.data_input_show_focus_all %}
                     <button id="focusAllBtn" class="btn btn-light btn-sm" title="{% trans 'Focus on All Points' %}">
                         <i class="bi bi-geo-alt"></i> {% trans "Focus All" %}
                     </button>
+                    {% endif %}
+                    {% if dataset.data_input_show_goto_location %}
                     <button id="gotoLocationBtn" class="btn btn-light btn-sm goto-location-btn" title="{% trans 'Goto Location' %}">
                         <i class="bi bi-crosshair"></i> {% trans "Goto location" %}
                     </button>
+                    {% endif %}
                     <button id="myLocationBtn" class="btn btn-light btn-sm" title="{% trans 'Zoom to My Location' %}">
                         <i class="bi bi-geo"></i> {% trans "My Location" %}
                     </button>
@@ -160,7 +164,7 @@
                 <h5 class="modal-title" id="virtualUserNameModalLabel">{% trans "Welcome" %}</h5>
             </div>
             <div class="modal-body">
-                <p class="mb-3">{% trans "You can add geometry points and data entries without logging in. Optionally, enter a name to identify your contributions:" %}</p>
+                <p class="mb-3">{{ dataset.get_anonymous_welcome_message|linebreaksbr }}</p>
                 <div class="mb-3">
                     <label for="virtualUserDisplayName" class="form-label">{% trans "Your name (optional)" %}</label>
                     <input type="text" class="form-control" id="virtualUserDisplayName" placeholder="{% trans 'e.g. John Doe' %}" maxlength="255">

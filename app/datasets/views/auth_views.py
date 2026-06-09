@@ -15,7 +15,10 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.core.mail import send_mail
+from django.conf import settings
 from datetime import datetime
+
+from isrfield.context_processors import branding_template_context
 
 from ..models import AuditLog, DataSet
 from ..forms import CustomUserCreationForm, EmailAuthenticationForm, GroupForm
@@ -43,40 +46,45 @@ def health_check_view(request):
 
 def password_reset_view(request):
     """Password reset request view"""
+    template_name = 'datasets/password_reset_form.html'
     if request.method == 'POST':
         form = PasswordResetForm(request.POST)
         if form.is_valid():
             email = form.cleaned_data['email']
-            try:
-                user = User.objects.get(email=email)
-                # Generate password reset token
-                token = default_token_generator.make_token(user)
-                uid = urlsafe_base64_encode(force_bytes(user.pk))
-                
-                # Create reset URL
-                current_site = get_current_site(request)
-                reset_url = f"http://{current_site.domain}/reset-password/{uid}/{token}/"
-                
-                # Send email
-                subject = 'Password Reset Request'
-                message = f"""
-                You requested a password reset for your account.
-                
-                Please click the following link to reset your password:
-                {reset_url}
-                
-                If you did not request this, please ignore this email.
-                """
-                
-                send_mail(subject, message, 'noreply@example.com', [email])
-                messages.success(request, 'Password reset email sent!')
-                return redirect('password_reset_done')
-            except User.DoesNotExist:
-                messages.error(request, 'No account found with that email address.')
+            associated_users = User.objects.filter(email=email)
+            if associated_users.exists():
+                for user in associated_users:
+                    context = {
+                        'email': user.email,
+                        'domain': get_current_site(request).domain,
+                        'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                        'user': user,
+                        'token': default_token_generator.make_token(user),
+                        'protocol': 'https' if request.is_secure() else 'http',
+                    }
+                    context.update(branding_template_context())
+                    subject = f"{settings.EMAIL_SUBJECT_PREFIX}Password Reset Request"
+                    message = render_to_string('datasets/password_reset_email.html', context)
+                    try:
+                        send_mail(
+                            subject,
+                            strip_tags(message),
+                            settings.DEFAULT_FROM_EMAIL,
+                            [user.email],
+                            fail_silently=False,
+                        )
+                    except Exception as e:
+                        messages.error(request, f'Error sending email: {e}')
+                        return render(request, template_name, {'form': form})
+            messages.success(
+                request,
+                'Password reset email has been sent. Please check your email.',
+            )
+            return redirect('password_reset_done')
     else:
         form = PasswordResetForm()
-    
-    return render(request, 'datasets/password_reset.html', {'form': form})
+
+    return render(request, template_name, {'form': form})
 
 
 def password_reset_done_view(request):
@@ -105,7 +113,7 @@ def password_reset_confirm_view(request, uidb64, token):
         return render(request, 'datasets/password_reset_confirm.html', {'form': form})
     else:
         messages.error(request, 'Invalid password reset link.')
-        return redirect('password_reset')
+        return redirect('password_reset_form')
 
 
 def password_reset_complete_view(request):

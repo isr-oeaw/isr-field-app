@@ -7,7 +7,7 @@ Domain logic is concentrated in [`app/datasets/models.py`](../app/datasets/model
 | Model | Role |
 |-------|------|
 | `AuditLog` | Optional audit entries: user, action, target, timestamp. |
-| `DataSet` | Top-level container: owner, sharing, flags (public, multiple entries, mapping areas, anonymous token, **`anonymous_show_all_points`**, **`anonymous_disable_new_points`**, **`anonymous_show_all_mapping_areas`** when anonymous input is on—meaningful only if mapping areas are enabled), map defaults. |
+| `DataSet` | Top-level container: owner, sharing, flags (public, multiple entries, mapping areas, anonymous token, **`anonymous_welcome_message`** intro for the anonymous welcome modal, **`anonymous_show_all_points`**, **`anonymous_disable_new_points`**, **`anonymous_show_all_mapping_areas`** when anonymous input is on—meaningful only if mapping areas are enabled), data-input UI toggles (**`data_input_show_street_view`**, **`data_input_show_focus_all`**, **`data_input_show_goto_location`**), map defaults. |
 | `VirtualContributor` | Anonymous contributor identity when anonymous data input is enabled (`uuid`, display name, dataset). |
 | `DataGeometry` | Point geometry (`Point`, SRID 4326), address, `id_kurz`, creator user or virtual contributor. |
 | `DataEntry` | Belongs to a geometry; optional name/year; creator user or virtual contributor. |
