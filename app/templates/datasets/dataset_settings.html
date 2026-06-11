@@ -114,6 +114,16 @@
                                     <textarea class="form-control" id="anonymous_welcome_message" name="anonymous_welcome_message" rows="3" placeholder="You can add geometry points and data entries without logging in. Optionally, enter a name to identify your contributions:">{{ dataset.anonymous_welcome_message }}</textarea>
                                     <div class="form-text">Shown at the top of the welcome modal when anonymous contributors open the data-input link. Leave empty to use the default English text.</div>
                                 </div>
+                                <div class="mb-3">
+                                    <label for="anonymous_welcome_title" class="form-label fw-semibold">Welcome dialog title</label>
+                                    <input type="text" class="form-control" id="anonymous_welcome_title" name="anonymous_welcome_title" value="{{ dataset.anonymous_welcome_title }}" placeholder="Welcome" maxlength="255">
+                                    <div class="form-text">Modal header shown when anonymous contributors first open the data-input link. Leave empty for the default.</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="anonymous_name_field_label" class="form-label fw-semibold">Name field label</label>
+                                    <input type="text" class="form-control" id="anonymous_name_field_label" name="anonymous_name_field_label" value="{{ dataset.anonymous_name_field_label }}" placeholder="Your name (optional)" maxlength="255">
+                                    <div class="form-text">Label above the optional display-name field in the welcome modal. Leave empty for the default.</div>
+                                </div>
                                 {% if dataset.allow_anonymous_data_input and dataset.anonymous_access_token %}
                                 <div class="mt-3 p-3 bg-light rounded">
                                     <label class="form-label fw-semibold small">Shareable data input URL</label>
@@ -147,6 +157,19 @@
                             <input class="form-check-input" type="checkbox" id="data_input_show_goto_location" name="data_input_show_goto_location" {% if dataset.data_input_show_goto_location %}checked{% endif %}>
                             <label class="form-check-label fw-semibold" for="data_input_show_goto_location">Show Goto location button</label>
                             <div class="form-text">When enabled, contributors can pick a map location by clicking on the map (Goto location mode in the map toolbar).</div>
+                        </div>
+                        <div class="mb-4 pb-3 border-bottom">
+                            <h6 class="fw-semibold mb-3">Map button labels</h6>
+                            <div class="mb-3">
+                                <label for="data_input_add_point_label" class="form-label">Add Point button text</label>
+                                <input type="text" class="form-control" id="data_input_add_point_label" name="data_input_add_point_label" value="{{ dataset.data_input_add_point_label }}" placeholder="Add Point" maxlength="255">
+                                <div class="form-text">Label on the Add Point toolbar button. Leave empty for the default.</div>
+                            </div>
+                            <div class="mb-0">
+                                <label for="data_input_my_location_label" class="form-label">My Location button text</label>
+                                <input type="text" class="form-control" id="data_input_my_location_label" name="data_input_my_location_label" value="{{ dataset.data_input_my_location_label }}" placeholder="My Location" maxlength="255">
+                                <div class="form-text">Label on the My Location toolbar button. Leave empty for the default.</div>
+                            </div>
                         </div>
                         <div class="mb-4 pb-3 border-bottom">
                             {% with attach_mode=dataset.data_input_attachments_mode|default:"images" %}

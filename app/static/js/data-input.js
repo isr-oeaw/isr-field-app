@@ -2864,7 +2864,8 @@ function toggleAddPointMode() {
     } else {
         button.classList.remove('btn-success');
         button.classList.add('btn-primary');
-        button.innerHTML = '<i class="bi bi-plus-circle"></i> Add Point';
+        var addPointLabel = window.dataInputAddPointLabel || 'Add Point';
+        button.innerHTML = '<i class="bi bi-plus-circle"></i> ' + addPointLabel;
         button.title = 'Add New Point';
         if (map && map.getContainer()) map.getContainer().style.cursor = '';
         if (addPointMarker) { map.removeLayer(addPointMarker); addPointMarker = null; }
