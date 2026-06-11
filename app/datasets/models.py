@@ -22,6 +22,10 @@ DEFAULT_ANONYMOUS_WELCOME_MESSAGE = (
     "You can add geometry points and data entries without logging in. "
     "Optionally, enter a name to identify your contributions:"
 )
+DEFAULT_DATA_INPUT_ADD_POINT_LABEL = "Add Point"
+DEFAULT_DATA_INPUT_MY_LOCATION_LABEL = "My Location"
+DEFAULT_ANONYMOUS_WELCOME_TITLE = "Welcome"
+DEFAULT_ANONYMOUS_NAME_FIELD_LABEL = "Your name (optional)"
 
 
 class DataSet(models.Model):
@@ -89,6 +93,30 @@ class DataSet(models.Model):
     data_input_show_goto_location = models.BooleanField(
         default=True,
         help_text="When enabled, contributors see the Goto location button on the data-input map.",
+    )
+    data_input_add_point_label = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        help_text="Label for the Add Point button on the data-input map. Leave blank for default.",
+    )
+    data_input_my_location_label = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        help_text="Label for the My Location button on the data-input map. Leave blank for default.",
+    )
+    anonymous_welcome_title = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        help_text="Title of the anonymous welcome modal. Leave blank for default.",
+    )
+    anonymous_name_field_label = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        help_text="Label for the optional name field in the anonymous welcome modal. Leave blank for default.",
     )
 
     def __str__(self):
@@ -176,6 +204,22 @@ class DataSet(models.Model):
     def get_anonymous_welcome_message(self):
         text = (self.anonymous_welcome_message or "").strip()
         return text or DEFAULT_ANONYMOUS_WELCOME_MESSAGE
+
+    def get_data_input_add_point_label(self):
+        text = (self.data_input_add_point_label or "").strip()
+        return text or DEFAULT_DATA_INPUT_ADD_POINT_LABEL
+
+    def get_data_input_my_location_label(self):
+        text = (self.data_input_my_location_label or "").strip()
+        return text or DEFAULT_DATA_INPUT_MY_LOCATION_LABEL
+
+    def get_anonymous_welcome_title(self):
+        text = (self.anonymous_welcome_title or "").strip()
+        return text or DEFAULT_ANONYMOUS_WELCOME_TITLE
+
+    def get_anonymous_name_field_label(self):
+        text = (self.anonymous_name_field_label or "").strip()
+        return text or DEFAULT_ANONYMOUS_NAME_FIELD_LABEL
 
     def user_has_geometry_access(self, user, geometry_obj):
         """

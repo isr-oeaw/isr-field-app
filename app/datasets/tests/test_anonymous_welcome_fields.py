@@ -8,7 +8,11 @@ from django.test import Client, TestCase
 from django.urls import reverse
 
 from datasets.models import (
+    DEFAULT_ANONYMOUS_NAME_FIELD_LABEL,
     DEFAULT_ANONYMOUS_WELCOME_MESSAGE,
+    DEFAULT_ANONYMOUS_WELCOME_TITLE,
+    DEFAULT_DATA_INPUT_ADD_POINT_LABEL,
+    DEFAULT_DATA_INPUT_MY_LOCATION_LABEL,
     DataSet,
     DatasetField,
     VirtualContributor,
@@ -228,6 +232,102 @@ class AnonymousWelcomeMessageTests(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, DEFAULT_ANONYMOUS_WELCOME_MESSAGE)
+
+
+class DataInputLabelSettingsTests(TestCase):
+    def setUp(self):
+        self.owner = User.objects.create_user(username="labels", password="p")
+        self.dataset = DataSet.objects.create(
+            name="Labels DS",
+            owner=self.owner,
+            allow_anonymous_data_input=True,
+        )
+        self.dataset.ensure_anonymous_access_token()
+        self.dataset.refresh_from_db()
+        self.client = Client()
+        self.client.force_login(self.owner)
+
+    def _post_settings(self, **extra):
+        data = {
+            "name": self.dataset.name,
+            "description": self.dataset.description or "",
+            "allow_anonymous_data_input": "on",
+            "data_input_show_street_view": "on",
+        }
+        data.update(extra)
+        return self.client.post(
+            reverse("dataset_settings", args=[self.dataset.id]),
+            data,
+        )
+
+    def test_settings_page_includes_label_fields(self):
+        response = self.client.get(reverse("dataset_settings", args=[self.dataset.id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'name="data_input_add_point_label"')
+        self.assertContains(response, 'name="data_input_my_location_label"')
+        self.assertContains(response, 'name="anonymous_welcome_title"')
+        self.assertContains(response, 'name="anonymous_name_field_label"')
+
+    def test_settings_post_saves_custom_labels(self):
+        response = self._post_settings(
+            data_input_add_point_label="Punkt hinzufügen",
+            data_input_my_location_label="Mein Standort",
+            anonymous_welcome_title="Willkommen",
+            anonymous_name_field_label="Ihr Name (optional)",
+        )
+        self.assertEqual(response.status_code, 302)
+        self.dataset.refresh_from_db()
+        self.assertEqual(self.dataset.data_input_add_point_label, "Punkt hinzufügen")
+        self.assertEqual(self.dataset.data_input_my_location_label, "Mein Standort")
+        self.assertEqual(self.dataset.anonymous_welcome_title, "Willkommen")
+        self.assertEqual(self.dataset.anonymous_name_field_label, "Ihr Name (optional)")
+
+    def test_getters_return_defaults_when_blank(self):
+        self.assertEqual(
+            self.dataset.get_data_input_add_point_label(),
+            DEFAULT_DATA_INPUT_ADD_POINT_LABEL,
+        )
+        self.assertEqual(
+            self.dataset.get_data_input_my_location_label(),
+            DEFAULT_DATA_INPUT_MY_LOCATION_LABEL,
+        )
+        self.assertEqual(
+            self.dataset.get_anonymous_welcome_title(),
+            DEFAULT_ANONYMOUS_WELCOME_TITLE,
+        )
+        self.assertEqual(
+            self.dataset.get_anonymous_name_field_label(),
+            DEFAULT_ANONYMOUS_NAME_FIELD_LABEL,
+        )
+
+    def test_data_input_renders_custom_map_button_labels(self):
+        self.dataset.data_input_add_point_label = "Add spot"
+        self.dataset.data_input_my_location_label = "Where am I"
+        self.dataset.save(update_fields=[
+            "data_input_add_point_label",
+            "data_input_my_location_label",
+        ])
+        response = self.client.get(reverse("dataset_data_input", args=[self.dataset.id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Add spot")
+        self.assertContains(response, "Where am I")
+        self.assertContains(response, 'window.dataInputAddPointLabel = "Add spot"')
+
+    def test_anonymous_data_input_renders_custom_welcome_labels(self):
+        self.dataset.anonymous_welcome_title = "Hello there"
+        self.dataset.anonymous_name_field_label = "Display name"
+        self.dataset.save(update_fields=[
+            "anonymous_welcome_title",
+            "anonymous_name_field_label",
+        ])
+        url = reverse(
+            "dataset_data_input_anonymous",
+            args=[self.dataset.id, self.dataset.anonymous_access_token],
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Hello there")
+        self.assertContains(response, "Display name")
 
 
 class ResetAnonymousVirtualUserTests(TestCase):

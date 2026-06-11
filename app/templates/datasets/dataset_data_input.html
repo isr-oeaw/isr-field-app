@@ -49,7 +49,7 @@
                     {% endif %}
                     {% if not is_anonymous_data_input or not dataset.anonymous_disable_new_points %}
                     <button id="addPointBtn" class="btn btn-primary btn-sm" title="{% trans 'Add New Point' %}">
-                        <i class="bi bi-plus-circle"></i> {% trans "Add Point" %}
+                        <i class="bi bi-plus-circle"></i> {{ dataset.get_data_input_add_point_label }}
                     </button>
                     {% endif %}
                     {% if dataset.data_input_show_focus_all %}
@@ -63,7 +63,7 @@
                     </button>
                     {% endif %}
                     <button id="myLocationBtn" class="btn btn-light btn-sm" title="{% trans 'Zoom to My Location' %}">
-                        <i class="bi bi-geo"></i> {% trans "My Location" %}
+                        <i class="bi bi-geo"></i> {{ dataset.get_data_input_my_location_label }}
                     </button>
                 </div>
                 
@@ -161,12 +161,12 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="virtualUserNameModalLabel">{% trans "Welcome" %}</h5>
+                <h5 class="modal-title" id="virtualUserNameModalLabel">{{ dataset.get_anonymous_welcome_title }}</h5>
             </div>
             <div class="modal-body">
                 <p class="mb-3">{{ dataset.get_anonymous_welcome_message|linebreaksbr }}</p>
                 <div class="mb-3">
-                    <label for="virtualUserDisplayName" class="form-label">{% trans "Your name (optional)" %}</label>
+                    <label for="virtualUserDisplayName" class="form-label">{{ dataset.get_anonymous_name_field_label }}</label>
                     <input type="text" class="form-control" id="virtualUserDisplayName" placeholder="{% trans 'e.g. John Doe' %}" maxlength="255">
                 </div>
                 <div id="anonymousWelcomeFieldsRoot" class="mt-3"></div>
@@ -243,6 +243,7 @@
     {% if is_anonymous_data_input %}window.anonymousAccessToken = "{{ anonymous_access_token|escapejs }}";{% endif %}
     window.anonymousDisableNewPoints = {% if is_anonymous_data_input and dataset.anonymous_disable_new_points %}true{% else %}false{% endif %};
     window.dataInputShowStreetView = {% if data_input_show_street_view %}true{% else %}false{% endif %};
+    window.dataInputAddPointLabel = "{{ dataset.get_data_input_add_point_label|escapejs }}";
     
     // Translation strings for JavaScript
     window.translations = {

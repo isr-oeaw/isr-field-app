@@ -358,11 +358,19 @@ def dataset_edit_view(request, dataset_id):
         map_default_lng = request.POST.get('map_default_lng')
         map_default_zoom = request.POST.get('map_default_zoom')
         anonymous_welcome_message = (request.POST.get('anonymous_welcome_message') or '').strip()
+        data_input_add_point_label = (request.POST.get('data_input_add_point_label') or '').strip()
+        data_input_my_location_label = (request.POST.get('data_input_my_location_label') or '').strip()
+        anonymous_welcome_title = (request.POST.get('anonymous_welcome_title') or '').strip()
+        anonymous_name_field_label = (request.POST.get('anonymous_name_field_label') or '').strip()
         
         if name:
             dataset.name = name
             dataset.description = description
             dataset.anonymous_welcome_message = anonymous_welcome_message
+            dataset.data_input_add_point_label = data_input_add_point_label
+            dataset.data_input_my_location_label = data_input_my_location_label
+            dataset.anonymous_welcome_title = anonymous_welcome_title
+            dataset.anonymous_name_field_label = anonymous_name_field_label
             dataset.is_public = is_public
             # Handle allow_multiple_entries field (graceful handling for migration)
             try:
@@ -475,6 +483,10 @@ def dataset_copy_view(request, dataset_id):
         'data_input_show_street_view': getattr(original_dataset, 'data_input_show_street_view', True),
         'data_input_show_focus_all': getattr(original_dataset, 'data_input_show_focus_all', True),
         'data_input_show_goto_location': getattr(original_dataset, 'data_input_show_goto_location', True),
+        'data_input_add_point_label': getattr(original_dataset, 'data_input_add_point_label', '') or '',
+        'data_input_my_location_label': getattr(original_dataset, 'data_input_my_location_label', '') or '',
+        'anonymous_welcome_title': getattr(original_dataset, 'anonymous_welcome_title', '') or '',
+        'anonymous_name_field_label': getattr(original_dataset, 'anonymous_name_field_label', '') or '',
     }
     if hasattr(original_dataset, 'map_default_lat'):
         create_kwargs['map_default_lat'] = original_dataset.map_default_lat
