@@ -1,4 +1,4 @@
-FROM python:3.13-slim
+FROM python:3.15-slim
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -36,7 +36,8 @@ WORKDIR /usr/src/app
 
 # Install dependencies
 COPY ./requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt \
+    && pip install --no-cache-dir "gdal==$(gdal-config --version)"
 
 # Copy project
 COPY ./app/ .

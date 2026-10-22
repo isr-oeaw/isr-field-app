@@ -1,4 +1,4 @@
-FROM python:slim
+FROM python:3.15-slim
 
 # Install runtime dependencies
 RUN apt-get update && \
@@ -42,7 +42,8 @@ WORKDIR /usr/src/app
 # Install Python dependencies
 COPY ./requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+    pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir "gdal==$(gdal-config --version)"
 
 # Copy project files
 COPY ./app/ .
